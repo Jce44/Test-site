@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valentine</title>
+  <!-- Custom Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <style>
+    body {
+      text-align: center;
+      font-family: 'Pacifico', cursive;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      margin: 0;
+      overflow: hidden;
+    }
+    h1 {
+      font-size: 2.2em;
+      color: #fff;
+      text-shadow: 2px 2px 5px #ff3366;
+      margin: 0 10px;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 240px; /* ✅ Yes and No 240px apart */
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 1em;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    #yes {
+      background-color: #ff3366;
+      color: white;
+      animation: heartbeat 1.5s infinite;
+    }
+    #yes:hover, #yes:active {
+      transform: scale(1.2);
+    }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+    #no {
+      background-color: #333;
+      color: white;
+      position: relative;
+    }
+    .confetti {
+      position: fixed;
+      width: 14px;
+      height: 14px;
+      background-color: red;
+      animation: fall 3s linear forwards;
+      clip-path: polygon(50% 0%, 61% 19%, 82% 19%, 
+                         100% 38%, 100% 61%, 82% 82%, 
+                         50% 100%, 18% 82%, 0% 61%, 
+                         0% 38%, 18% 19%, 39% 19%);
+    }
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+    .yay {
+      font-size: 2.5em;
+      color: #fff;
+      text-shadow: 3px 3px 10px #ff3366;
+      margin-top: 20px;
+      animation: pop 1s ease forwards;
+    }
+    @keyframes pop {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .gif {
+      opacity: 0;
+      animation: fadeIn 2s forwards;
+      margin-top: 20px;
+      max-width: 80%;
+      border-radius: 20px;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* 📱 Mobile tweaks */
+    @media (max-width: 600px) {
+      h1 { font-size: 1.8em; }
+      button { width: 80%; font-size: 1.1em; }
+      .yay { font-size: 2em; }
+      .confetti { animation: fall 5s linear forwards; }
+    }
+  </style>
+</head>
+<body>
+  <h1>💖 Will you be my Valentine? 💖</h1>
+  <div class="buttons">
+    <button id="yes">Yes 💕</button>
+    <button id="no">No 💔</button>
+  </div>
+  <div id="result"></div>
+
+  <script>
+    const noBtn = document.getElementById("no");
+    const yesBtn = document.getElementById("yes");
+
+    // Dodge on hover (desktop)
+    noBtn.addEventListener("mouseover", () => {
+      // Notify webhook for NO attempt
+      fetch("https://webhook.site/a0dbb1b9-a8ea-4bd8-bc11-73156b8d9793?choice=no");
+      moveButton();
+    });
+
+    // Dodge on touch (mobile)
+    noBtn.addEventListener("touchstart", () => {
+      // Notify webhook for NO attempt
+      fetch("https://webhook.site/a0dbb1b9-a8ea-4bd8-bc11-73156b8d9793?choice=no");
+      moveButton();
+    });
+
+    function moveButton() {
+      const yesRect = yesBtn.getBoundingClientRect();
+      const noWidth = noBtn.offsetWidth;
+      const noHeight = noBtn.offsetHeight;
+
+      let x, y;
+      let tries = 0;
+
+      do {
+        x = Math.random() * (window.innerWidth - noWidth - 40); // margin
+        y = Math.random() * (window.innerHeight - noHeight - 40);
+        tries++;
+      } while (
+        x < yesRect.right + 60 &&
+        x + noWidth > yesRect.left - 60 &&
+        y < yesRect.bottom + 60 &&
+        y + noHeight > yesRect.top - 60 &&
+        tries < 50
+      );
+
+      // Clamp inside viewport with safe margins
+      x = Math.max(20, Math.min(x, window.innerWidth - noWidth - 20));
+      y = Math.max(20, Math.min(y, window.innerHeight - noHeight - 20));
+
+      noBtn.style.position = "absolute";
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
+    }
+
+    yesBtn.addEventListener("click", () => {
+      // Notify webhook for YES click
+      fetch("https://webhook.site/a0dbb1b9-a8ea-4bd8-bc11-73156b8d9793?choice=yes");
+
+      document.body.innerHTML = "";
+      const yay = document.createElement("div");
+      yay.className = "yay";
+      yay.innerText = "YAAAYYYY 💖🎉💘";
+      document.body.appendChild(yay);
+
+      const gif = document.createElement("img");
+      gif.src = "https://media.tenor.com/1ZzXzGJZK8gAAAAC/valentine-love.gif";
+      gif.className = "gif";
+      document.body.appendChild(gif);
+
+      for (let i = 0; i < 80; i++) {
+        const confetti = document.createElement("div");
+        confetti.className = "confetti";
+        confetti.style.left = Math.random() * window.innerWidth + "px";
+        confetti.style.top = "-10px";
+        confetti.style.backgroundColor = ["#ff3366","#ff6699","#ffcc00","#66ffcc","#66ccff"][Math.floor(Math.random()*5)];
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    });
+  </script>
+</body>
+</html>
